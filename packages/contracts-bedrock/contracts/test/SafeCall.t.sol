@@ -15,7 +15,7 @@ contract SafeCall_Test is CommonTest {
         vm.assume(from.balance == 0);
         vm.assume(to.balance == 0);
         // no precompiles
-        vm.assume(uint160(to) > 10);
+        bound(uint160(to), 11, type(uint256).max);
         // don't call the vm
         vm.assume(to != address(vm));
         vm.assume(from != address(vm));
