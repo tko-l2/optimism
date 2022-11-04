@@ -11,8 +11,7 @@ import {
 const deployFn: DeployFunction = async (hre) => {
   const { deployer } = await hre.getNamedAccounts()
 
-  let controller = hre.deployConfig.controller
-  if (controller === ethers.constants.AddressZero) {
+  if (hre.deployConfig.controller === ethers.constants.AddressZero) {
     if (hre.network.config.live === false) {
       console.log(`WARNING!!!`)
       console.log(`WARNING!!!`)
@@ -21,7 +20,7 @@ const deployFn: DeployFunction = async (hre) => {
       console.log(
         `WARNING!!! Make sure you are ONLY doing this on a test network.`
       )
-      controller = deployer
+      hre.deployConfig.controller = deployer
     } else {
       throw new Error(
         `controller address MUST NOT be the deployer on live networks`
@@ -29,8 +28,7 @@ const deployFn: DeployFunction = async (hre) => {
     }
   }
 
-  let finalOwner = hre.deployConfig.finalSystemOwner
-  if (finalOwner === ethers.constants.AddressZero) {
+  if (hre.deployConfig.finalSystemOwner === ethers.constants.AddressZero) {
     if (hre.network.config.live === false) {
       console.log(`WARNING!!!`)
       console.log(`WARNING!!!`)
@@ -39,7 +37,7 @@ const deployFn: DeployFunction = async (hre) => {
       console.log(
         `WARNING!!! Make sure you are ONLY doing this on a test network.`
       )
-      finalOwner = deployer
+      hre.deployConfig.finalSystemOwner = deployer
     } else {
       throw new Error(`must specify the finalSystemOwner on live networks`)
     }
@@ -52,8 +50,8 @@ const deployFn: DeployFunction = async (hre) => {
       {
         globalConfig: {
           proxyAdmin: await getDeploymentAddress(hre, 'ProxyAdmin'),
-          controller,
-          finalOwner,
+          controller: hre.deployConfig.controller,
+          finalOwner: hre.deployConfig.finalSystemOwner,
           addressManager: await getDeploymentAddress(hre, 'Lib_AddressManager'),
         },
         proxyAddressConfig: {
