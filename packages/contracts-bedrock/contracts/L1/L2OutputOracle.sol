@@ -104,36 +104,23 @@ contract L2OutputOracle is OwnableUpgradeable, Semver {
      * @custom:semver 0.0.1
      *
      * @param _submissionInterval    Interval in blocks at which checkpoints must be submitted.
-     * @param _genesisL2Output       The initial L2 output of the L2 chain.
      * @param _historicalTotalBlocks Number of blocks preceding this L2 chain.
      * @param _startingBlockNumber   The number of the first L2 block.
      * @param _startingTimestamp     The timestamp of the first L2 block.
      * @param _l2BlockTime           The time per L2 block, in seconds.
-     * @param _proposer              The address of the proposer.
-     * @param _owner                 The address of the owner.
      */
     constructor(
         uint256 _submissionInterval,
-        bytes32 _genesisL2Output,
         uint256 _historicalTotalBlocks,
         uint256 _startingBlockNumber,
         uint256 _startingTimestamp,
-        uint256 _l2BlockTime,
-        address _proposer,
-        address _owner
+        uint256 _l2BlockTime
     ) Semver(0, 0, 1) {
-        require(
-            _startingTimestamp <= block.timestamp,
-            "L2OutputOracle: starting L2 timestamp must be less than current time"
-        );
-
         SUBMISSION_INTERVAL = _submissionInterval;
         HISTORICAL_TOTAL_BLOCKS = _historicalTotalBlocks;
         STARTING_BLOCK_NUMBER = _startingBlockNumber;
         STARTING_TIMESTAMP = _startingTimestamp;
         L2_BLOCK_TIME = _l2BlockTime;
-
-        initialize(_genesisL2Output, _proposer, _owner);
     }
 
     /**
