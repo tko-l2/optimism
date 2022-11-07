@@ -1,6 +1,8 @@
 package e2eutils
 
 import (
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 	"math/big"
 	"os"
 	"path"
@@ -235,4 +237,44 @@ func SystemConfigFromDeployConfig(deployConfig *genesis.DeployConfig) eth.System
 		Scalar:      eth.Bytes32(common.BigToHash(new(big.Int).SetUint64(deployConfig.GasPriceOracleScalar))),
 		GasLimit:    uint64(deployConfig.L2GenesisBlockGasLimit),
 	}
+}
+
+func ForkedDeployConfig(t require.TestingT, mnemonicCfg *MnemonicConfig, startBlock *types.Block) *genesis.DeployConfig {
+	startTag := rpc.BlockNumberOrHashWithHash(startBlock.Hash(), true)
+	secrets, err := mnemonicCfg.Secrets()
+	require.NoError(t, err)
+	addrs := secrets.Addresses()
+	out := &genesis.DeployConfig{
+		JSONDeployConfig: genesis.JSONDeployConfig{
+			L1ChainID:                        1,
+			L2ChainID:                        10,
+			L2BlockTime:                      2,
+			MaxSequencerDrift:                3600,
+			SequencerWindowSize:              100,
+			ChannelTimeout:                   40,
+			P2PSequencerAddress:              addrs.SequencerP2P,
+			BatchInboxAddress:                common.HexToAddress("0xff00000000000000000000000000000000000000"),
+			BatchSenderAddress:               addrs.Batcher,
+			SystemConfigOwner:                addrs.SysCfgOwner,
+			L2OutputOracleSubmissionInterval: 10,
+			L2OutputOracleStartingTimestamp:  int(startBlock.Time()),
+			L2OutputOracleProposer:           addrs.Proposer,
+			L2OutputOracleOwner:              addrs.Deployer,
+			L2GenesisBlockCoinbase:           common.HexToAddress("0x42000000000000000000000000000000000000f0"),
+			L2GenesisBlockGasLimit:           hexutil.Uint64(15_000_000),
+			// taken from devnet, need to check this
+			L2GenesisBlockBaseFeePerGas: uint64ToBig(0x3B9ACA00),
+			L2GenesisBlockDifficulty:    uint64ToBig(0),
+			L1BlockTime:                 12,
+			CliqueSignerAddress:         addrs.CliqueSigner,
+			OptimismBaseFeeRecipient:    common.HexToAddress("0xBcd4042DE499D14e55001CcbB24a551F3b954096"),
+			OptimismL1FeeRecipient:      common.HexToAddress("0x71bE63f3384f5fb98995898A86B02Fb2426c5788"),
+			FinalizationPeriodSeconds:   2,
+			DeploymentWaitConfirmations: 1,
+			EIP1559Elasticity:           10,
+			EIP1559Denominator:          50,
+		},
+	}
+	out.SetL1StartingBlockTag(&startTag)
+	return out
 }
